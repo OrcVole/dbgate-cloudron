@@ -48,8 +48,32 @@ full source citations; the load-bearing results are below.
 - The identity claim for `OAUTH_LOGIN_FIELD` (`preferred_username` expected, `email` the
   fallback) and enforcement of the platform's per-app access list at the identity provider:
   both are auth-gate evidence, unverified until then.
-- Whether `LOGIN_PERMISSIONS_<login>` applies to OAuth-authenticated logins: source read
-  scheduled with the entrypoint work.
+
+---
+
+## 2026-08-02: phases 2-4, scaffold through Cloudron integration
+
+**Validated:**
+
+- **`LOGIN_PERMISSIONS_<login>` applies to OAuth-authenticated logins.**
+  `getCurrentPermissions` lives on the shared `AuthProviderBase` class, and the OAuth
+  provider sets `login` to `payload[OAUTH_LOGIN_FIELD]` before the base class's lookup runs
+  (`authProvider.js`). Confirmed by reading both code paths together, not inferred from one.
+- **The build-time boot gate genuinely proves the copied tree runs**, negative-tested
+  against a wrong port (correctly fails, exit 1) after a first version silently passed
+  regardless of outcome (`SHELL` is ignored under OCI image format; see `../HARVEST.md`).
+- **The smoke suite runs the container the way Cloudron does**: default userns, root PID 1
+  dropping to `cloudron` via `gosu`, not the `--userns=keep-id` shortcut a first version
+  used, which was caught skipping that exact sequence.
+- **`cloudron/base:5.0.0`'s default `node` on PATH is 22.14.0 LTS on this digest**,
+  matching the upstream image's Node 22 build; no PATH manipulation needed in the Dockerfile.
+
+**Surfaced (and fixed, none shipped):** three defects, all in test tooling, none in the
+package: the silently-passing build gate; the `--userns=keep-id` smoke-harness bug; and
+`podman exec whoami`/host-side `stat` measuring the wrong process and the wrong mount
+(gotcha #157, generalised). Full detail in `../HARVEST.md`.
+
+**Still open:**
 
 ---
 
