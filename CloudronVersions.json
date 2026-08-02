@@ -4,9 +4,11 @@
     "1.0.0": {
       "manifest": {
         "id": "io.github.orcvole.dbgate",
+        "dockerImage": "ghcr.io/orcvole/dbgate-cloudron@sha256:9ce6667f1361e190cb66bb2e3ccd9326cc3d7c67a55d6950eb370d1ed330e59c",
         "title": "DbGate",
         "author": "OrcVole",
         "tagline": "SQL and NoSQL client for the databases behind your apps",
+        "website": "https://www.dbgate.io/",
         "description": "DbGate is a web-based SQL and NoSQL database client. This package brings the community\nedition (GPL-3.0) to Cloudron, giving you a schema browser, query editor, data grid and\nimport/export tools for the databases already running behind your apps.\n\n**Why on Cloudron.** Cloudron provisions PostgreSQL, MySQL, MongoDB and Redis for well over\nhalf the apps in its stores, and hands you credentials but no way to look inside them. DbGate\nis that window: point it at any addon database, browse the schema, run queries, edit rows,\nand export to CSV, Excel or NDJSON.\n\n**Engines.** PostgreSQL, MySQL, MariaDB, SQL Server, Oracle, MongoDB, Redis, SQLite,\nCockroachDB, ClickHouse, Cassandra, DuckDB and Firebird, all bundled. SQLite files can live\ndirectly on the app's own storage.\n\n**Sign-in.** Cloudron single sign-on out of the box (OpenID Connect), or a generated local\nlogin when installed without SSO. An MCP server (new upstream in 7.2.3) can optionally be\nenabled with a token so AI agents can browse and query read-only.\n\n**One workspace, shared.** The community edition has a single shared workspace: every user\nyou permit into the app sees the same connection list and stored credentials. Per-user\nrole-based access control is an upstream commercial feature and is not part of this package.\nTreat the app as a tool for the Cloudron owner and trusted administrators, and use the\nCloudron dashboard's user access list to control who can open it.\n\nConnection passwords saved in the workspace are encrypted at rest, and the workspace,\nincluding the encryption key, rides Cloudron's backups.\n",
         "changelog": "[1.0.0]\n* Initial release\n* DbGate community edition 7.2.3 (upstream release 2026-07-20)\n* Cloudron single sign-on via OpenID Connect, with a generated local login when installed without SSO\n* Thirteen bundled database engines: PostgreSQL, MySQL, MariaDB, SQL Server, Oracle, MongoDB, Redis, SQLite, CockroachDB, ClickHouse, Cassandra, DuckDB, Firebird\n* Workspace, saved connections and encryption key persisted under /app/data and covered by Cloudron backups\n* Optional read-only MCP server for AI agents (set MCP_TOKEN in /app/data/env)\n",
         "icon": "file://logo.png",
@@ -52,11 +54,10 @@
           "postgresql",
           "mysql",
           "mongodb"
-        ],
-        "dockerImage": "ghcr.io/orcvole/dbgate-cloudron@sha256:9ce6667f1361e190cb66bb2e3ccd9326cc3d7c67a55d6950eb370d1ed330e59c"
+        ]
       },
-      "creationDate": "2026-08-02T12:35:00.000Z",
-      "ts": 1785674100000,
+      "creationDate": "2026-08-02T12:40:00.000Z",
+      "ts": 1785674400000,
       "publishState": "published"
     }
   }
