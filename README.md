@@ -1,6 +1,6 @@
 # DbGate for Cloudron
 
-[DbGate](https://dbgate.org) community edition (GPL-3.0) packaged as a Cloudron community
+[DbGate](https://www.dbgate.io/) community edition (GPL-3.0) packaged as a Cloudron community
 app: a web-based SQL and NoSQL client for the databases already running behind your Cloudron
 apps. Upstream: [dbgate/dbgate](https://github.com/dbgate/dbgate).
 

@@ -4,6 +4,7 @@
   "title": "DbGate",
   "author": "OrcVole",
   "tagline": "SQL and NoSQL client for the databases behind your apps",
+  "website": "https://www.dbgate.io/",
   "description": "file://DESCRIPTION.md",
   "changelog": "file://CHANGELOG.md",
   "icon": "file://logo.png",
