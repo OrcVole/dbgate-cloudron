@@ -30,9 +30,25 @@ the one used for the public mediaLinks asset and the announcement.
 
 ## Gate 1: auth, SSO end to end, fences
 
-(pending; predictions on record: redirect URI `/`, claim `preferred_username`, non-permitted
-user rejected at the identity provider, RPC fenced logged-out with 401 while `GET /` stays
-200 by design, seeded credential path on a no-SSO install)
+Run 2026-08-02 against the same digest as gate 0.
+
+| Invariant | Proof | Result |
+|---|---|---|
+| Real sign-in, SSO | operator confirmed, browser: immediate redirect to Cloudron's login, landed inside DbGate logged in | PASS |
+| Callback path | token exchange succeeded (`DBGM-00002` payload log), which only happens if `redirect_uri` matched Cloudron's registered `loginRedirectUri: "/"`; a mismatch fails the exchange itself. Matches ADR 0001's prediction, no divergence | PASS |
+| Claim mapping | `OAUTH_LOGIN_FIELD=preferred_username` present and populated in the identity payload; `email` fallback not needed | PASS, resolves question B |
+| Account/session row | none created, by design: the community edition has no persistent user store (`storage.js` is stubbed in the public image); auth is a stateless per-request JWT | PASS (architectural, not a gap) |
+| Public paths stay open under SSO | `/health` 200 without a session | PASS |
+| Protected paths fenced | `POST /connections/list` 401 without a session | PASS |
+| No unintended `proxyAuth` | manifest addons are `localstorage` + `oidc` only | PASS |
+| `optionalSso` both branches work | SSO: real login above. No-SSO: full scripted round trip on `dbgate-nosso-testing` — correct credential returns an `accessToken` that authorises `/connections/list` (200); an intentionally wrong password is rejected. Credential value never left the container or appeared in any log or terminal output | PASS |
+
+Question C (platform per-app access-list enforcement at the IdP) is not directly testable
+from a single permitted account; deferred, noted as unverified rather than assumed, low risk
+since it is Cloudron's own platform behaviour, not package-specific.
+
+Real evidence (the raw OAuth identity payload, which carries the operator's actual email and
+username) is kept in gitignored `phase-notes/gate-1-evidence-raw.md`, never in this file.
 
 ## Gate 2: functional flows
 
