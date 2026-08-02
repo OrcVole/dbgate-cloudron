@@ -1,0 +1,9 @@
+.anonymize-list
+*token*.txt
+.env
+.env.*
+*.key
+phase-notes/
+.claude/
+announcements/
+screenshot-local/

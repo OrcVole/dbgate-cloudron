@@ -1,0 +1,40 @@
+{
+  "id": "io.github.orcvole.dbgate",
+  "title": "DbGate",
+  "author": "OrcVole",
+  "tagline": "SQL and NoSQL client for the databases behind your apps",
+  "description": "file://DESCRIPTION.md",
+  "changelog": "file://CHANGELOG.md",
+  "icon": "file://logo.png",
+  "version": "1.0.0",
+  "upstreamVersion": "7.2.3",
+  "healthCheckPath": "/health",
+  "httpPort": 3000,
+  "addons": {
+    "localstorage": {},
+    "oidc": {
+      "loginRedirectUri": "/"
+    }
+  },
+  "optionalSso": true,
+  "memoryLimit": 1610612736,
+  "configurePath": "/",
+  "postInstallMessage": "file://POSTINSTALL.md",
+  "manifestVersion": 2,
+  "minBoxVersion": "9.1.0",
+  "packagerName": "OrcVole",
+  "packagerUrl": "https://github.com/OrcVole/dbgate-cloudron",
+  "contactEmail": "Most+github@OrcadianVole.com",
+  "iconUrl": "https://raw.githubusercontent.com/OrcVole/dbgate-cloudron/main/logo.png",
+  "mediaLinks": [
+    "https://raw.githubusercontent.com/OrcVole/dbgate-cloudron/main/docs/screenshot-1.png"
+  ],
+  "tags": [
+    "database",
+    "sql",
+    "admin",
+    "postgresql",
+    "mysql",
+    "mongodb"
+  ]
+}
