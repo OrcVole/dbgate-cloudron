@@ -78,7 +78,56 @@ instead, unique per row in this response shape. A probe bug, not an application 
 
 ## Gate 3: update and restore survival
 
-(pending; `.key` sha256 byte-identical across both, connections intact, modes re-asserted)
+Run 2026-08-02 against `dbgate-nosso-testing`, carrying real data from gate 2 as the canary
+(3-row table, an NDJSON archive export, and a connection with a real encrypted password
+deliberately saved to trigger `.key` creation, see below).
+
+**Pre-op discovery**: gate 2's flow used a password-less SQLite connection and never
+triggered DbGate's own `.key` generation, so gate 3 first saved a connection WITH a password
+to exercise it. This surfaced a real defect: DbGate creates `.key` at mode `0644`; `start.sh`
+had no explicit re-assertion for it. Fixed before shipping (see the packaging notes and
+`docs/decisions/0003-key-file-posture.md`); the fixed image (`7.2.3-2`) is also what proves
+the update leg below, since a version bump was needed anyway for a real digest change.
+
+### Update leg: `7.2.3-1` to `7.2.3-2`, via `cloudron update --app ... --image ...`
+
+| Invariant | Baseline (`7.2.3-1`) | Post-update (`7.2.3-2`) | Result |
+|---|---|---|---|
+| Swap actually happened | `start.sh` sha256 `ea38a1e4...` | `start.sh` sha256 `e6abf8a3...` (verified by hash, not the CLI's own message, per gotcha #54/#83) | PASS |
+| `dockerImage` in app record | — | `...@sha256:9ce6667f...`, exact match to the pushed digest | PASS |
+| `admin-credentials` sha256 | `4e5f4b03...` | `4e5f4b03...` | PASS, byte-identical |
+| `admin-credentials` mode | `600 cloudron:cloudron` | `600 cloudron:cloudron` | PASS |
+| `.key` sha256 | `1a099a91...` | `1a099a91...` | PASS, byte-identical |
+| `.key` mode | `644` (upstream default, pre-fix) | `600 cloudron:cloudron` (the fix, now live) | PASS, the fix works |
+| Archive export sha256 | `d48a3b95...` | `d48a3b95...` | PASS, byte-identical |
+| Boot path | — | `existing local admin credential found` (not regeneration) | PASS |
+| Data, byte-exact | 3 rows (sprocket/12, cog/7, gear/3) | same 3 rows, same values, queried live through the API | PASS |
+| Health | — | 200 externally | PASS |
+| Platform task | — | `Downloading image` line present; auto-took a pre-update backup | PASS, clean |
+
+### Restore leg: fresh backup, in-place restore
+
+| Invariant | Proof | Result |
+|---|---|---|
+| Backup task clean | no syncer errors, completed in 12.7s | PASS |
+| Restore task | completed (CLI foreground connection dropped under box-side flakiness, gotcha #105; verified box-side completion, not assumed) | PASS |
+| `admin-credentials` sha256 | `4e5f4b03...`, unchanged from update-leg baseline | PASS, byte-identical |
+| `admin-credentials` mode | `600 cloudron:cloudron` | PASS |
+| `.key` sha256 | `1a099a91...`, unchanged | PASS, byte-identical |
+| `.key` mode | `600 cloudron:cloudron`, **re-asserted correctly after a real restore**, not merely surviving an update | PASS, the exact scenario gate 3's own reference warns can drift |
+| Archive export sha256 | `d48a3b95...`, unchanged | PASS, byte-identical |
+| Boot path | `existing local admin credential found` | PASS |
+| Health | 200 externally | PASS |
+
+**Gate 3 verdict: PASS**, both legs. The `.key` mode fix (found by this gate) is proven not
+just present but functioning correctly across both a real update and a real restore, which
+is the actual invariant that matters: an every-boot re-assertion that only worked once would
+have been a false confidence.
+
+One CLI-connection flake during the restore leg (a plain `echo` through `cloudron exec`
+timed out at 25s while the restore itself completed correctly server-side, confirmed via a
+later successful connection): gotcha #105 territory, a box-side/CLI-connection transient,
+not a package defect. Retried on a fresh connection rather than treated as a failure.
 
 ## Gate 4: memory
 

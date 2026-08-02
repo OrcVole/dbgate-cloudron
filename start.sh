@@ -35,6 +35,18 @@ mkdir -p "${WORKSPACE}" "${SECRETS_DIR}" "${RUN}"
 chown -R cloudron:cloudron "${DATA}"
 chmod 0700 "${SECRETS_DIR}"
 
+# DbGate's own connection-password encryption key (ADR 0003: accept upstream's wrapping,
+# but treat the FILE with the same discipline as every other secret). It is created lazily
+# by the app itself, at 0644 (upstream's own default), the first time a connection with a
+# password is saved -- there is no way to pre-create it, so this only fixes a PRE-EXISTING
+# file (e.g. from a restore); a key generated mid-session stays 0644 until the next boot,
+# same pattern as every other every-boot re-assertion in this script. Found by testing,
+# not assumed: the upstream default is 0644, verified on the box before this line existed.
+if [[ -f "${WORKSPACE}/.key" ]]; then
+  chown cloudron:cloudron "${WORKSPACE}/.key"
+  chmod 0600 "${WORKSPACE}/.key"
+fi
+
 # 3. Map Cloudron addon variables to the app's own names, every boot (they can change).
 SSO_MODE=0
 if [[ -n "${CLOUDRON_OIDC_AUTH_ENDPOINT:-}" ]]; then
