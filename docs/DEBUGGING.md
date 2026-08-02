@@ -217,7 +217,53 @@ facts, not the systemd-driver path some references assume).
 
 ## Gate 5: stranger path
 
-(pending; runs after publish)
+Run 2026-08-02 via the Cloudron dashboard's community-app flow (the local CLI 8.3.1 cannot
+do `--versions-url` installs against box 9.2.0, a known CLI/box version mismatch; the
+operator chose the dashboard route rather than upgrading a CLI shared with other projects).
+
+**Attempt 1: FAILED on a manifest gap, package's fault, fixed.**
+`Invalid manifest: website is missing in manifest`. The `website` field is not in the
+manifest reference's own "Required fields" table, but the community install validator
+enforces it. Fixed (see the pre-publish audit section above); this is exactly what gate 5
+exists to catch, since no earlier gate exercises the community validator at all.
+
+**Attempt 2: FAILED on a platform transient, not the package's fault.**
+`Unable to detect ipv6. API server (ipv6.api.cloudron.io) unreachable`. Diagnosed from the
+box's own per-app task log rather than the dashboard message: the install reached
+`dns.js registerLocations` → `getIPv6`, which timed out after 30 seconds against Cloudron's
+own IP-detection endpoint. Two things this proves in the package's favour: the manifest
+**passed validation** this time (the `website` fix worked), and the task got far enough to
+successfully download the package icon from its raw GitHub URL. It died before container
+creation, so nothing package-related was ever reached. Both `ipv4.` and `ipv6.
+api.cloudron.io` answered in ~0.5s when tested from the box immediately afterwards,
+confirming a genuine transient. Known behaviour: DNS-touching operations hard-depend on
+that endpoint even when the domain uses external DNS, and the documented remedy is to
+retry. The failed install still holds its location registration, so it must be uninstalled
+before retrying.
+
+**Attempt 3: PASS.** (The failed attempt-2 install had to be uninstalled first: a failed
+install still holds its location registration and a retry would otherwise hit
+`409 primary location in use`.)
+
+| Invariant | Proof | Result |
+|---|---|---|
+| Installs from the published feed | Dashboard community-app flow, raw `CloudronVersions.json` URL, completed | PASS |
+| Runs the shipping digest | `docker inspect --format '{{.Config.Image}}'` → `...@sha256:9ce6667f...`, exact match | PASS |
+| Healthy | `/health` 200 from inside the container; platform reports `health: healthy`, `runState: running` | PASS |
+| **`versionsUrl` non-empty** | `https://raw.githubusercontent.com/OrcVole/dbgate-cloudron/main/CloudronVersions.json` recorded on the install | **PASS, the decisive check** |
+| Auth topology holds on a stranger install | boot marker `sso=1`, entrypoint logged the OIDC mapping branch | PASS |
+| Icon renders | task log shows the community icon downloaded from the raw URL during install | PASS |
+
+The `versionsUrl` check is why this gate exists as its own rung. Contrast, measured on the
+same box at the same moment: our own two dev installs (`dbgate-testing`,
+`dbgate-nosso-testing`), both created with `cloudron install --image`, show
+`versionsUrl: ""` while `enableAutomaticUpdate: true`. That combination is inert: they can
+never receive a published release. Only the feed path sets the field, and only a real
+stranger-path install proves it.
+
+A note for the round's own cleanup: the two dev installs are therefore NOT representative
+of what a user gets, and should not be mistaken for canaries. Both are uninstalled at the
+end of the round; a kept canary would need to be installed via the feed.
 
 ## Operational notes for future debugging
 
