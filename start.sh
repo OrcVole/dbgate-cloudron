@@ -53,8 +53,10 @@ fi
 # 4. No-SSO fallback: seed a generated admin credential, first-run only, idempotent.
 #    The operator-readable copy is written BEFORE the credential is exported, so a failed
 #    write leaves no live credential nobody can read (gotcha #114 ordering).
+FIRST_RUN="n/a"
 if [[ "${SSO_MODE}" == "0" ]]; then
   if [[ ! -f "${ADMIN_CRED}" ]]; then
+    FIRST_RUN=1
     echo "==> [start] first run: generating the local admin credential"
     GEN_PASSWORD="$(openssl rand -hex 20)"
     ( umask 077
@@ -65,6 +67,7 @@ if [[ "${SSO_MODE}" == "0" ]]; then
     )
     unset GEN_PASSWORD
   else
+    FIRST_RUN=0
     echo "==> [start] existing local admin credential found"
   fi
   chown cloudron:cloudron "${ADMIN_CRED}"; chmod 0600 "${ADMIN_CRED}"   # re-assert every boot
@@ -92,8 +95,13 @@ export HOME="${DATA}"
 export PORT="${CLOUDRON_HTTP_PORT:-3000}"
 
 # Boot-mode marker for support and for the gate ladder, log-independent (rootless podman's
-# journald log driver flushes lazily; field guide gotcha #77).
-printf 'sso=%s\n' "${SSO_MODE}" > "${RUN}/boot-mode"
+# journald log driver flushes lazily; field guide gotcha #77). first_run reflects whether
+# the local admin credential was just created (no-SSO branch) or "n/a" under SSO, where this
+# package seeds nothing of its own and DbGate manages its own workspace first-boot state.
+{
+  printf 'sso=%s\n' "${SSO_MODE}"
+  printf 'first_run=%s\n' "${FIRST_RUN}"
+} > "${RUN}/boot-mode"
 
 echo "==> [start] http 0.0.0.0:${PORT}  workspace ${WORKSPACE_DIR}  sso ${SSO_MODE}"
 cd "${CODE}"
