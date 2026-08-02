@@ -52,7 +52,29 @@ username) is kept in gitignored `phase-notes/gate-1-evidence-raw.md`, never in t
 
 ## Gate 2: functional flows
 
-(pending; SQLite file under `/app/data` as the flow target, byte-level export verification)
+Run 2026-08-02 against `dbgate-nosso-testing`, driven end to end through the real RPC API
+with a real session token (no internals poked). Scope decision: engine breadth beyond SQLite
+is upstream's own concern, not this package's; the flow proves the workspace/persistence
+path and the RPC surface, which is what packaging can break.
+
+| Invariant | Proof | Result |
+|---|---|---|
+| Create database | `POST /connections/new-sqlite-database` returns a connection id | PASS |
+| DDL | `CREATE TABLE` via `/database-connections/run-script`, no error | PASS |
+| Write | 3-row `INSERT` via the same endpoint | PASS |
+| Read, exact values | `SELECT` via `/database-connections/query-data` returns exactly 3 rows, values byte-exact (sprocket/12, cog/7, gear/3) | PASS |
+| Export (NDJSON archive) | `POST /archive/save-rows` writes to `/app/data/workspace/archive/default/*.jsonl` | PASS |
+| Export file exists on disk | confirmed by an independent `stat`/read outside the API | PASS |
+| Export byte-level integrity | sha256 identical across two independent reads of the file | PASS, `d48a3b9...` |
+| Round trip | `GET /archive/get-archive-data` returns the same 3 rows read back through the API | PASS |
+| Addons/services | none declared beyond `localstorage`+`oidc`; nothing to exercise | N/A by design |
+| Routing | main domain already proven external (gates 0/1); no `httpPorts` declared | N/A |
+
+Own probe defect found and fixed before trusting the result: an early row-count check
+counted the literal substring `"name"` in the response, which also matches the column
+metadata key (`"columnName":"name"`, since one of the columns is itself named `name`),
+inflating 3 real rows to a false count of 5. Fixed by counting `"id":N` occurrences
+instead, unique per row in this response shape. A probe bug, not an application defect.
 
 ## Gate 3: update and restore survival
 
