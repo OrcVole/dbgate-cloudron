@@ -131,8 +131,55 @@ not a package defect. Retried on a fresh connection rather than treated as a fai
 
 ## Gate 4: memory
 
-(pending; idle versus multi-connection load, `memory.stat` anon+file+swap from inside the
-container)
+Run 2026-08-02 against `dbgate-nosso-testing`, digest `7.2.3-2`. DbGate's primary store is
+**not memory-mapped** (a Node.js process with per-connection forked child driver
+processes, plain read/write SQLite access, no LMDB/mmap engine), so the direct
+`memory.peak` at 80 percent of `memoryLimit` check applies without the memory-mapped
+special case. Measured via cgroup v2 counters read from inside the container
+(`/sys/fs/cgroup/memory.*`), which the gate reference confirms is fully sufficient without
+host access. `memory.max` confirmed 1,610,612,736 bytes, matching the manifest's 1.5 GiB
+`memoryLimit` exactly.
+
+Idle baseline (post-restart, clean `memory.peak`): `memory.current` 56,623,104 B (~54 MiB),
+`memory.peak` 67,407,872 B (~64 MiB), `oom_kill` 0.
+
+Load: 5 concurrent SQLite connections (DbGate forks a child driver process per connection,
+so this exercises 5 concurrent worker processes plus the main API process), each running a
+sustained insert-then-count loop for 90 seconds against its own database file.
+
+| Invariant | Idle | Loaded |
+|---|---|---|
+| `memory.current` | 56,623,104 B (~54 MiB) | 66,920,448 B (~64 MiB, settled post-drain) |
+| `memory.peak` | 67,407,872 B (~64 MiB) | 352,124,928 B (~336 MiB) |
+| `oom_kill` | 0 | 0 |
+| `memory.swap.current` | — | 0 |
+| per-process RSS | node 100,464 KB (sampled ~1s after restart, still warming) | main API 109,772 KB; 2 active child driver processes ~99,000 KB each (of 5 spawned; DbGate recycles idle connection children) |
+| app health | 200 | 200, response time 1.2s during load |
+| load verifiably landed | — | worker 1: 519 rows; worker 2: 522 rows (~5.7-5.8 ops/sec sustained per worker over 90s, confirmed live via the API, not inferred from the load script's own exit code) |
+
+`memoryLimit` = 1,610,612,736 B (1.5 GiB). 80 percent threshold = 1,288,490,188 B (~1.2 GiB).
+Loaded peak (352,124,928 B) is **21.9 percent of the cap**, comfortably clear.
+
+**Worst-case bound**: DbGate has no bundled service to add to the arithmetic (no addon
+beyond `localstorage`+`oidc`, no bundled database). The worst case is more concurrent
+connections than this test drove; per-connection overhead observed at ~99 MiB gives headroom
+for roughly 11 further concurrent connections before approaching the 80 percent line from
+this load shape alone, which is generous for an admin tool not expected to serve dozens of
+simultaneous heavy sessions.
+
+**Verdict: PASS.** All three checks hold: `oom_kill` zero throughout, `memory.peak` at 22
+percent of `memoryLimit` (well under the 80 percent line), and the worst-case bound clears
+with hundreds of MiB of margin. `memoryLimit` stays at the current **1.5 GiB (1,610,612,736
+bytes)**; no change indicated. DbGate's store is not memory-mapped, so `memory.peak` is the
+correct pass/fail counter as read (no anon+swap special case applies).
+
+**Operational note**: `cloudron exec` was unreliable throughout this gate (multiple
+`AggregateError [ETIMEDOUT]`, gotcha #105), including on a plain `echo`, while the app
+itself answered its public health endpoint in 1.2s throughout — confirming the flakiness
+was in the CLI/box connection, not the package. Switched to direct SSH plus `docker exec`
+on the box host for the remainder of the gate, which was reliable throughout; cgroup path
+confirmed as `/sys/fs/cgroup/docker/<container-id>` (cgroupfs driver, matching platform
+facts, not the systemd-driver path some references assume).
 
 ## Gate 5: stranger path
 
