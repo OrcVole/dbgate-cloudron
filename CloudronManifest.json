@@ -19,6 +19,18 @@
   "optionalSso": true,
   "memoryLimit": 1610612736,
   "configurePath": "/",
+  "checklist": {
+    "read-local-credentials": {
+      "message": "Read the generated admin username and password from /app/data/.secrets/admin-credentials (File Manager or Web Terminal) before sharing this app.",
+      "sso": false
+    },
+    "shared-workspace": {
+      "message": "DbGate is a single shared workspace: every user you grant access to sees the same saved connections and stored credentials. Review the app's Access Control list."
+    },
+    "enable-backup-encryption": {
+      "message": "This app stores database connection credentials. Enable backup encryption in Cloudron's backup settings if you have not already."
+    }
+  },
   "postInstallMessage": "file://POSTINSTALL.md",
   "manifestVersion": 2,
   "minBoxVersion": "9.1.0",

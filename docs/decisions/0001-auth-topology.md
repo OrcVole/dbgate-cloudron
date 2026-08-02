@@ -33,6 +33,22 @@ own session model. The platform's decision rule for apps with native auth is the
    is present in the environment: each disables or weakens the auth boundary this topology
    relies on.
 
+## Question D, resolved from source (phase 4)
+
+`LOGIN_PERMISSIONS_<login>` applies to OAuth-authenticated logins, not only the `logins`
+provider: `getCurrentPermissions` lives on the shared `AuthProviderBase` class and looks up
+`LOGIN_PERMISSIONS_${login}` regardless of which provider authenticated the request, and the
+OAuth provider sets `login` to `payload[OAUTH_LOGIN_FIELD]` (`packages/api/src/auth/
+authProvider.js`, `OAuthProvider.oauthToken`). An operator who wants to grant a specific
+Cloudron user elevated permissions inside DbGate sets `LOGIN_PERMISSIONS_<their-username>` in
+`/app/data/env`, keyed by whatever claim `OAUTH_LOGIN_FIELD` resolves to.
+
+Bonus finding from the same read: upstream ships its own `OAUTH_ALLOWED_LOGINS` and
+`OAUTH_ALLOWED_GROUPS`, a second access-control layer independent of Cloudron's own per-app
+user list. Not wired by the package by default (Cloudron's own access control is the primary
+mechanism and is what gate 1 verifies), but documented in the README as an available
+operator extension for anyone wanting to restrict further inside the app itself.
+
 ## Consequences
 
 - All permitted users share one workspace; the platform's per-app user access control is the

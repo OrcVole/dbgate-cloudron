@@ -15,6 +15,16 @@ apps. Upstream: [dbgate/dbgate](https://github.com/dbgate/dbgate).
 - Optional read-only MCP server (upstream 7.2.3 feature) so AI agents can browse and query:
   set `MCP_TOKEN` in `/app/data/env` and restart.
 
+## Extending access control
+
+Set `LOGIN_PERMISSIONS_<login>` in `/app/data/env` (restart to apply) to grant a specific
+user a non-default permission set inside DbGate; `<login>` is whatever your identity
+provider's `preferred_username` claim resolves to for that user (or `email` if your
+provider does not supply `preferred_username`). Upstream also ships `OAUTH_ALLOWED_LOGINS`
+and `OAUTH_ALLOWED_GROUPS` as a second, app-level access restriction independent of
+Cloudron's own per-app user list; the package does not set either by default, since
+Cloudron's own Access Control panel is the primary mechanism.
+
 ## The one honesty note
 
 DbGate community edition is a SINGLE SHARED WORKSPACE. Every user permitted into the app

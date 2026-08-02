@@ -92,7 +92,7 @@ written). Never record secret values; the sha256 is the invariant.
 | `OAUTH_LOGIN_FIELD` | `preferred_username` | verify claim at the auth gate; fallback `email` |
 | `OAUTH_LOGOUT` | issuer end_session endpoint if discoverable, else unset | optional upstream |
 | `LOGIN` / `PASSWORD` | seeded generated credential | no-SSO installs only |
-| operator extras | sourced from `/app/data/env` | `LOGIN_PASSWORD_*`, `PERMISSIONS`, `MCP_TOKEN`, `CONNECTIONS`, ... |
+| operator extras | sourced from `/app/data/env` | `LOGIN_PASSWORD_*`, `LOGIN_PERMISSIONS_<login>` (applies to OAuth logins too, keyed by the `OAUTH_LOGIN_FIELD` claim; verified from source, `authProvider.js`), `PERMISSIONS`, `MCP_TOKEN`, `CONNECTIONS`, `OAUTH_ALLOWED_LOGINS`, `OAUTH_ALLOWED_GROUPS`, ... |
 
 ## Backup and restore
 
