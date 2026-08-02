@@ -1,5 +1,39 @@
 # Debugging and gate evidence
 
+## Shipping digest and the gate-ladder digest-consistency finding
+
+**Shipping digest: `ghcr.io/orcvole/dbgate-cloudron@sha256:9ce6667f1361e190cb66bb2e3ccd9326cc3d7c67a55d6950eb370d1ed330e59c`
+(`7.2.3-2`).** Gates 0-2 below were first proven against `7.2.3-1`; gate 3 built `7.2.3-2`
+(the `.key` mode fix) to prove the update path, and gate 4 then ran against `7.2.3-2`
+without gates 0-2 having been re-run against it first, a real gap against the ladder's own
+rule ("a rebuild restarts the ladder at Gate 0"), caught at the pre-publish audit rather
+than earlier. Closed as follows, at the audit (2026-08-02, reasoning tier):
+
+- The exact diff between the two digests was verified (not assumed): a 12-line additive
+  block in `start.sh` re-asserting `.key`'s mode, touching no auth, routing, health, or
+  Dockerfile logic. `git diff 6895bb0..4584e44 -- start.sh Dockerfile`.
+- Both throwaway installs were updated to `7.2.3-2` and the swap verified by hash
+  (`sha256sum /app/code/start.sh` before and after), matching the digest #7.2.3-2 image
+  exactly on both. Health re-confirmed 200 on both post-update.
+- Gate 2's functional-flow claims carry over: the RPC/data path is identical regardless of
+  auth branch, and was independently re-exercised against this exact digest during gate 3's
+  update leg (the byte-exact data check ran against `7.2.3-2`).
+- Gate 0's rendering screenshot was not retaken: the captured page is Cloudron's own IdP
+  login (SSO) or DbGate's static login form (no-SSO), neither of which the diff touches.
+- **Gate 1's live human SSO sign-in remains proven only against `7.2.3-1`.** Put to the
+  operator explicitly at the audit rather than assumed either way: re-test live, or accept
+  the verified-diff argument. **Operator decision: accept the diff argument.** Recorded here
+  as an explicit, reasoned exception, not a silent gap. Residual risk: effectively zero. The
+  added block runs unconditionally, before the SSO/no-SSO branch is even reached, and it
+  only `chown`/`chmod`s the `.key` file; it reads no auth state and writes nothing the OAuth
+  flow consults, so it cannot influence sign-in behaviour by construction, not merely by
+  observation.
+
+This gap and its closure are logged in `../HARVEST.md` as a process-doctrine addition: track
+the currently-proven shipping digest explicitly through the round, not only per-gate.
+
+
+
 Gate ladder evidence tables land here as each gate resolves: one row per invariant, a proof
 cell containing the actual evidence (hash prefixes, counts, modes, log lines), an explicit
 PASS or FAIL, and enough recipe to repeat the gate at the next version bump.

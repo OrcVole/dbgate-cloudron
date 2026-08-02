@@ -1,5 +1,6 @@
 {
   "id": "io.github.orcvole.dbgate",
+  "dockerImage": "ghcr.io/orcvole/dbgate-cloudron@sha256:9ce6667f1361e190cb66bb2e3ccd9326cc3d7c67a55d6950eb370d1ed330e59c",
   "title": "DbGate",
   "author": "OrcVole",
   "tagline": "SQL and NoSQL client for the databases behind your apps",
