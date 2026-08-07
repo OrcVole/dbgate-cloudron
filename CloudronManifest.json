@@ -1,6 +1,6 @@
 {
   "id": "io.github.orcvole.dbgate",
-  "dockerImage": "ghcr.io/orcvole/dbgate-cloudron@sha256:9ce6667f1361e190cb66bb2e3ccd9326cc3d7c67a55d6950eb370d1ed330e59c",
+  "dockerImage": "ghcr.io/orcvole/dbgate-cloudron@sha256:04a37bde9ef9c1f5e2fadcd9ad48963803dae15d9125dca9b9026ecf6f221066",
   "title": "DbGate",
   "author": "OrcVole",
   "tagline": "SQL and NoSQL client for the databases behind your apps",
@@ -8,8 +8,8 @@
   "description": "file://DESCRIPTION.md",
   "changelog": "file://CHANGELOG.md",
   "icon": "file://logo.png",
-  "version": "1.0.0",
-  "upstreamVersion": "7.2.3",
+  "version": "1.0.1",
+  "upstreamVersion": "7.2.4",
   "healthCheckPath": "/health",
   "httpPort": 3000,
   "addons": {
