@@ -1,3 +1,8 @@
+[1.0.1]
+* Update DbGate community edition 7.2.3 -> 7.2.4 (upstream release 2026-08-04)
+* Upstream: built-in PostgreSQL backup and restore without external tools; improved Firebird metadata loading; fixes for MySQL/MariaDB system views and MongoDB filters
+* No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+
 [1.0.0]
 * Initial release
 * DbGate community edition 7.2.3 (upstream release 2026-07-20)
