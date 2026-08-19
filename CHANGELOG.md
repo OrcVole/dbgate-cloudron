@@ -1,3 +1,7 @@
+[1.0.2]
+* DbGate 7.2.5, which is a security release despite not saying so: export file writes are restricted to managed directories and symlink-based path escapes are blocked, SSRF and local file reads are prevented in remote text and JSON Lines downloads, plugin package names and command dispatch are validated, and generated script comments and directives are sanitised against code injection
+* Also fixed upstream: SQLite and LibSQL bigint values keep their precision, and an npm install failure from a dbgate-pg-dumper version mismatch
+
 [1.0.1]
 * Update DbGate community edition 7.2.3 -> 7.2.4 (upstream release 2026-08-04)
 * Upstream: built-in PostgreSQL backup and restore without external tools; improved Firebird metadata loading; fixes for MySQL/MariaDB system views and MongoDB filters

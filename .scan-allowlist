@@ -5,3 +5,18 @@
 # so the denylist matching it is correct behaviour and allowlisting it is the honest response.
 # Before 2026-08-09 meilisearch alone handled this, with bespoke code; now it is the shared mechanism.
 Most+github@OrcadianVole.com
+
+# Material Design Icons ships two nautical icon classes whose names contain a common English noun
+# that is also a username on the build host, so the identity denylist matches them. The hits are in
+# /home/dbgate-docker/public/build/fonts/materialdesignicons.css, a VENDORED upstream front-end
+# asset inside the dbgate image: the strings are public CSS class names published by Material
+# Design Icons and say nothing about this estate. Added 2026-08-19 while publishing 1.0.2.
+#
+# Same class of problem openbao fixed on 2026-08-09 ("stop scanning vendored trees for identity
+# strings"). That fix covered the REPO scan; this hit is in the IMAGE scan, which the package
+# cannot anonymise because the file comes from upstream, so allowlisting is the honest response.
+#
+# The comment below deliberately does NOT spell the matched string out: .scan-allowlist is itself
+# in the scanned file set, so a comment quoting the denylisted string fails the gate it documents.
+# The entry line has to contain it; the prose does not.
+.mdi-sail-boat
