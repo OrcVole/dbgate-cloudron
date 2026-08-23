@@ -32,8 +32,6 @@ than earlier. Closed as follows, at the audit (2026-08-02, reasoning tier):
 This gap and its closure are logged in `../HARVEST.md` as a process-doctrine addition: track
 the currently-proven shipping digest explicitly through the round, not only per-gate.
 
-
-
 Gate ladder evidence tables land here as each gate resolves: one row per invariant, a proof
 cell containing the actual evidence (hash prefixes, counts, modes, log lines), an explicit
 PASS or FAIL, and enough recipe to repeat the gate at the next version bump.

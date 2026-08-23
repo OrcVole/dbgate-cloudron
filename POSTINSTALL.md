@@ -1,15 +1,15 @@
-<sso>
+`<sso>`
 Sign in with your Cloudron account. Every Cloudron user you allow in the app's Access
 Control list shares ONE workspace: the same saved connections, the same stored credentials.
 Grant access accordingly.
 </sso>
 
-<nosso>
+`<nosso>`
 This install runs without Cloudron single sign-on. A local administrator login was generated
 on first run:
 
-* Username: `admin`
-* Password: stored in `/app/data/.secrets/admin-credentials` (read it with the dashboard
+- Username: `admin`
+- Password: stored in `/app/data/.secrets/admin-credentials` (read it with the dashboard
   File Manager, or `cat` it from the Web Terminal)
 
 Change or extend logins by setting `LOGIN_PASSWORD_<name>` values in
