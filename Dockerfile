@@ -1,8 +1,8 @@
-FROM docker.io/dbgate/dbgate:7.2.5@sha256:232dd7cb37706ef96bc41aae9ac8564cde2ebe4dc63ea72f70ebeb47383ee450 AS upstream
+FROM docker.io/dbgate/dbgate:7.2.6@sha256:762a821588e1b1458a69c71d51abf6ed90cef6b65cbd53207b82e62af19a0929 AS upstream
 
 FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
 
-ARG DBGATE_VERSION=7.2.5
+ARG DBGATE_VERSION=7.2.6
 ENV DBGATE_VERSION=${DBGATE_VERSION}
 
 # The upstream tree is preserved at its own expected path deliberately: DbGate's own

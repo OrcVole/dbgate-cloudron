@@ -1,3 +1,10 @@
+[1.0.3]
+
+- Update DbGate community edition 7.2.5 -> 7.2.6
+- Upstream: routine features and fixes
+- No breaking or migration changes in this release
+- No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+
 [1.0.2]
 
 - DbGate 7.2.5, which is a security release despite not saying so: export file writes are restricted to managed directories and symlink-based path escapes are blocked, SSRF and local file reads are prevented in remote text and JSON Lines downloads, plugin package names and command dispatch are validated, and generated script comments and directives are sanitised against code injection
