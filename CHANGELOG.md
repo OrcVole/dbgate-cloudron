@@ -1,3 +1,12 @@
+[1.1.0]
+
+- Update DbGate community edition 7.2.6 to 7.3.0
+- Cloudflare D1 support (new feature, Premium tier)
+- Google sign-in with optional access restrictions and role synchronisation based on Google groups
+- Optional anonymous usage analytics with a consent prompt and toggle in Settings
+- Improved protection of database connection credentials
+- No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+
 [1.0.3]
 
 - Update DbGate community edition 7.2.5 -> 7.2.6
