@@ -64,7 +64,7 @@ run_scenario() {
   # image's default user (root), a NEW process unrelated to the actual running app
   # (gotcha #157). Inspect the real process tree instead.
   local node_user
-  node_user="$("$CRI" exec "$name" ps -eo user,comm 2>/dev/null | awk '$2=="node"{print $1; exit}')"
+  node_user="$("$CRI" exec "$name" ps -eo user,comm 2>/dev/null | awk '$2=="node"||$2=="MainThread"{print $1; exit}')"
   assert "[${scenario}] the node server process runs as cloudron (got: ${node_user})" $([[ "$node_user" == "cloudron" ]]; echo $?)
 
   local pid1_comm

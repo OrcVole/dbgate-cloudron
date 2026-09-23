@@ -1,6 +1,6 @@
 FROM docker.io/dbgate/dbgate:7.3.0@sha256:6108edc44b4949ab58bf5f02340b03799755b65c98f76ddaf7d7f7b08a2c5b36 AS upstream
 
-FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
+FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e
 
 ARG DBGATE_VERSION=7.3.0
 ENV DBGATE_VERSION=${DBGATE_VERSION}
@@ -30,7 +30,7 @@ RUN chmod 0755 /app/code/start.sh
 # degrade to a no-op under either shell.
 RUN set -e; \
     cd /home/dbgate-docker; \
-    export WORKSPACE_DIR=/tmp/dbgate-buildcheck HOME=/tmp/dbgate-buildcheck PORT=3000; \
+    export WORKSPACE_DIR=/tmp/dbgate-buildcheck HOME=/tmp/dbgate-buildcheck PORT=3000 PATH=/usr/local/node-24.19.0/bin:$PATH; \
     mkdir -p "$WORKSPACE_DIR"; \
     node bundle.js --listen-api & \
     pid=$!; \

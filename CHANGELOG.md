@@ -1,11 +1,15 @@
 [1.1.0]
 
-- Update DbGate community edition 7.2.6 to 7.3.0
+- Upstream dbgate 7.2.6 to 7.3.0.
 - Cloudflare D1 support (new feature, Premium tier)
-- Google sign-in with optional access restrictions and role synchronisation based on Google groups
+- Google sign-in with optional access restrictions and role synchronisation based on Google groups (Team Premium)
 - Optional anonymous usage analytics with a consent prompt and toggle in Settings
 - Improved protection of database connection credentials
-- No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+- New settings: GOOGLE_SIGN_IN_ENABLED, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ANALYTICS_CONSENT
+- Base image cloudron/base 5.0.0 to 5.1.0: the Ubuntu 24.04.4 point release, with its OS security
+  updates. Same Ubuntu 24.04 release and glibc 2.39.
+- DbGate now runs on Node.js 24.19.0 (was 22.14.0): base 5.1.0 ships Node 24 and no longer puts it
+  on PATH, so the package now points to it explicitly.
 
 [1.0.3]
 

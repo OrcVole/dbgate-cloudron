@@ -116,5 +116,6 @@ export PORT="${CLOUDRON_HTTP_PORT:-3000}"
 } > "${RUN}/boot-mode"
 
 echo "==> [start] http 0.0.0.0:${PORT}  workspace ${WORKSPACE_DIR}  sso ${SSO_MODE}"
+export PATH=/usr/local/node-24.19.0/bin:$PATH
 cd "${CODE}"
 exec gosu cloudron:cloudron node bundle.js --listen-api
