@@ -1,4 +1,4 @@
-`<upstream>7.3.0</upstream>
+<upstream>7.3.0</upstream>
 
 DbGate is a web-based SQL and NoSQL database client. This package brings the community
 edition (GPL-3.0) to Cloudron, giving you a schema browser, query editor, data grid and
