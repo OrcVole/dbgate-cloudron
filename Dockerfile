@@ -1,8 +1,12 @@
-FROM docker.io/dbgate/dbgate:7.3.0@sha256:6108edc44b4949ab58bf5f02340b03799755b65c98f76ddaf7d7f7b08a2c5b36 AS upstream
+FROM docker.io/dbgate/dbgate:7.3.2@sha256:fc68e7c433963bff17af7372ce87f4b94873551a1c1b124220c8c04a22a80311 AS upstream
 
-FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e
+# cloudron/base 6 ships no Node (base 5 carried 24.19.0 at /usr/local/node-24.19.0). The package
+# now brings the same Node itself, from the official image, so the base move changes one variable.
+FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS node
 
-ARG DBGATE_VERSION=7.3.0
+FROM docker.io/cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b
+
+ARG DBGATE_VERSION=7.3.2
 ENV DBGATE_VERSION=${DBGATE_VERSION}
 
 # The upstream tree is preserved at its own expected path deliberately: DbGate's own
@@ -11,12 +15,21 @@ ENV DBGATE_VERSION=${DBGATE_VERSION}
 # the tree would defeat both. See docs/decisions/0002-build-shape.md.
 COPY --from=upstream /home/dbgate-docker /home/dbgate-docker
 
+# Node at the path start.sh has always used. Owned by this package now, not by the base, so a
+# future base bump cannot move it (field guide #291). The gate execs the exact runtime path.
+COPY --from=node /usr/local/bin/node /usr/local/node-24.19.0/bin/node
+RUN set -e; \
+    ldd /usr/local/node-24.19.0/bin/node; \
+    if ldd /usr/local/node-24.19.0/bin/node 2>&1 | grep -q 'not found'; then echo "FATAL: node links a missing library"; exit 1; fi; \
+    test "$(/usr/local/node-24.19.0/bin/node --version)" = "v24.19.0"; \
+    echo "BUILD GATE OK: node v24.19.0 at the runtime path"
+
 COPY start.sh /app/code/start.sh
 RUN chmod 0755 /app/code/start.sh
 
 # Build-time gate: prove the copied tree actually boots on this base, not merely that it
-# links. Native modules from the upstream image's Node 22 build must load under the base's
-# own Node 22.14 LTS (already first on PATH on this base digest, verified empirically).
+# links. Native modules from the upstream image's Node build must load under the package's
+# Node 24.19.0, at the path start.sh uses.
 #
 # gotcha #36 in reverse: the SHELL instruction is SILENTLY IGNORED under OCI image format
 # ("SHELL is not supported for OCI image format... Must use docker format", observed on

@@ -1,3 +1,13 @@
+[1.1.1]
+
+- Base image cloudron/base 5.1.0 to 6.0.0 (Ubuntu 26.04). Base 6 ships no Node, so the package now
+  brings its own: Node 24.19.0, the same version the base supplied before, at the same path.
+- Upstream dbgate 7.3.0 to 7.3.2.
+- Security: upstream 7.3.1 "addressed multiple security issues" (no detail published), and 7.3.2
+  adds standard permission checks and database restrictions to built-in backup and restore.
+- Built-in backup and restore for MySQL, MariaDB, Redis and SQLite, without external tools.
+- New setting: USAGE_ANALYTICS controls usage analytics.
+
 [1.1.0]
 
 - Upstream dbgate 7.2.6 to 7.3.0.
