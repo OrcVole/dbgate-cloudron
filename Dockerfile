@@ -1,10 +1,11 @@
 FROM docker.io/dbgate/dbgate:7.3.2@sha256:fc68e7c433963bff17af7372ce87f4b94873551a1c1b124220c8c04a22a80311 AS upstream
 
 # cloudron/base 6 ships no Node (base 5 carried 24.19.0 at /usr/local/node-24.19.0). The package
-# now brings the same Node itself, from the official image, so the base move changes one variable.
-FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS node
+# now brings Node itself, from the official image (24.22.1, the 2026-10-20 security release), at a
+# versioned path of its own.
+FROM docker.io/library/node:24.22.1-bookworm-slim@sha256:2dd9a4f758e173b65fee15388f7706af6fb01ef50cf7a2c0538711d67a6981ae AS node
 
-FROM docker.io/cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b
+FROM docker.io/cloudron/base:6.0.1@sha256:7b1e729960c3ca312d26e886917ba89483241bba0219ff292858e10d9d5768ee
 
 ARG DBGATE_VERSION=7.3.2
 ENV DBGATE_VERSION=${DBGATE_VERSION}
@@ -17,19 +18,19 @@ COPY --from=upstream /home/dbgate-docker /home/dbgate-docker
 
 # Node at the path start.sh has always used. Owned by this package now, not by the base, so a
 # future base bump cannot move it (field guide #291). The gate execs the exact runtime path.
-COPY --from=node /usr/local/bin/node /usr/local/node-24.19.0/bin/node
+COPY --from=node /usr/local/bin/node /usr/local/node-24.22.1/bin/node
 RUN set -e; \
-    ldd /usr/local/node-24.19.0/bin/node; \
-    if ldd /usr/local/node-24.19.0/bin/node 2>&1 | grep -q 'not found'; then echo "FATAL: node links a missing library"; exit 1; fi; \
-    test "$(/usr/local/node-24.19.0/bin/node --version)" = "v24.19.0"; \
-    echo "BUILD GATE OK: node v24.19.0 at the runtime path"
+    ldd /usr/local/node-24.22.1/bin/node; \
+    if ldd /usr/local/node-24.22.1/bin/node 2>&1 | grep -q 'not found'; then echo "FATAL: node links a missing library"; exit 1; fi; \
+    test "$(/usr/local/node-24.22.1/bin/node --version)" = "v24.22.1"; \
+    echo "BUILD GATE OK: node v24.22.1 at the runtime path"
 
 COPY start.sh /app/code/start.sh
 RUN chmod 0755 /app/code/start.sh
 
 # Build-time gate: prove the copied tree actually boots on this base, not merely that it
 # links. Native modules from the upstream image's Node build must load under the package's
-# Node 24.19.0, at the path start.sh uses.
+# Node 24.22.1, at the path start.sh uses.
 #
 # gotcha #36 in reverse: the SHELL instruction is SILENTLY IGNORED under OCI image format
 # ("SHELL is not supported for OCI image format... Must use docker format", observed on
@@ -43,7 +44,7 @@ RUN chmod 0755 /app/code/start.sh
 # degrade to a no-op under either shell.
 RUN set -e; \
     cd /home/dbgate-docker; \
-    export WORKSPACE_DIR=/tmp/dbgate-buildcheck HOME=/tmp/dbgate-buildcheck PORT=3000 PATH=/usr/local/node-24.19.0/bin:$PATH; \
+    export WORKSPACE_DIR=/tmp/dbgate-buildcheck HOME=/tmp/dbgate-buildcheck PORT=3000 PATH=/usr/local/node-24.22.1/bin:$PATH; \
     mkdir -p "$WORKSPACE_DIR"; \
     node bundle.js --listen-api & \
     pid=$!; \
